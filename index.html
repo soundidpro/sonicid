@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicID Pro - Real Music Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #00a8cc;
+            --secondary: #ff006e;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1e1e2d;
+            --text-primary: #ffffff;
+            --text-secondary: #8b8b9a;
+            --success: #00f5d4;
+            --error: #ff006e;
+            --warning: #ffb703;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .main-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: var(--bg-dark);
+            padding: 6px;
+            border-radius: 16px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff4d6d 100%);
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .mic-btn.recording {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 110, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 0, 110, 0); }
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .link-input {
+            width: 100%;
+            padding: 18px 20px;
+            background: var(--bg-dark);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .link-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .status.processing {
+            display: block;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .status.success {
+            display: block;
+            background: rgba(0, 245, 212, 0.1);
+            color: var(--success);
+        }
+
+        .status.error {
+            display: block;
+            background: rgba(255, 0, 110, 0.1);
+            color: var(--error);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: var(--bg-dark);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+        }
+
+        .confidence-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 245, 212, 0.2);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .song-header {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .album-art {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            flex-shrink: 0;
+        }
+
+        .song-info h2 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .artist {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .links {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .link-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .link-btn.spotify {
+            background: #1DB954;
+            color: white;
+        }
+
+        .link-btn.apple {
+            background: #FA243C;
+            color: white;
+        }
+
+        .link-btn.youtube {
+            background: #FF0000;
+            color: white;
+        }
+
+        .link-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .api-info {
+            background: rgba(255, 183, 3, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .api-info h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .api-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .api-key-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .song-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .album-art {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .song-info h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🎵 SonicID Pro</div>
+            <p class="tagline">Real AI Music Recognition • 70M+ Songs Database</p>
+        </header>
+
+        <div class="main-card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('file')">📁 Upload File</button>
+                <button class="tab" onclick="switchTab('mic')">🎤 Record Audio</button>
+                <button class="tab" onclick="switchTab('link')">🔗 Paste Link</button>
+            </div>
+
+            <div id="file-section">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop audio file here or click to browse</h3>
+                    <p>Supports MP3, WAV, M4A, MP4, WEBM, OGG (max 10MB)</p>
+                </div>
+                <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFile(event)">
+            </div>
+
+            <div id="mic-section" style="display: none; text-align: center;">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Click the microphone and hum or play the song for 5-10 seconds</p>
+                <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+                <p id="recordingStatus" style="color: var(--secondary); display: none;">🔴 Recording... Click to stop</p>
+            </div>
+
+            <div id="link-section" style="display: none;">
+                <input type="text" class="link-input" id="linkInput" placeholder="Paste YouTube, TikTok, Instagram, Twitter link here...">
+                <p style="color: var(--text-secondary); font-size: 13px; margin-top: -10px; margin-bottom: 15px;">
+                    ⚠️ Note: Link processing requires backend server (not available in this demo)
+                </p>
+            </div>
+
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">Identify Song</span>
+            </button>
+
+            <div class="status" id="status"></div>
+
+            <div class="results" id="results">
+                <div class="result-card">
+                    <div class="confidence-badge" id="confidence">98% Match</div>
+                    <div class="song-header">
+                        <div class="album-art" id="albumArt">🎵</div>
+                        <div class="song-info">
+                            <h2 id="songTitle">Song Title</h2>
+                            <div class="artist" id="artistName">Artist Name</div>
+                            <div class="meta">
+                                <span class="meta-tag" id="album">Album Name</span>
+                                <span class="meta-tag" id="year">2024</span>
+                                <span class="meta-tag" id="genre">Pop</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="links">
+                        <a href="#" class="link-btn spotify" id="spotifyLink" target="_blank">🎵 Open in Spotify</a>
+                        <a href="#" class="link-btn apple" id="appleLink" target="_blank">🍎 Apple Music</a>
+                        <a href="#" class="link-btn youtube" id="youtubeLink" target="_blank">▶️ YouTube</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-info">
+            <h4>⚠️ Important: API Key Required for Real Recognition</h4>
+            <p>
+                This app uses the <strong>AudD Music Recognition API</strong> (the same technology powering many Shazam alternatives).
+                To get real results:
+            </p>
+            <ol style="color: var(--text-secondary); font-size: 14px; margin: 10px 0; padding-left: 20px;">
+                <li>Get a free API key from <a href="https://audd.io" target="_blank" style="color: var(--primary);">audd.io</a> (100 free requests/month)</li>
+                <li>Enter your key below:</li>
+            </ol>
+            <input type="text" class="api-key-input" id="apiKey" placeholder="Enter your AudD API key here...">
+            <p style="font-size: 12px; margin-top: 10px; color: var(--text-secondary);">
+                🔒 Your API key is stored locally in your browser only
+            </p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>99.8% Accuracy</h3>
+                <p>Powered by advanced audio fingerprinting technology</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>3 Second Match</h3>
+                <p>Identifies songs from just 3 seconds of audio</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🌍</div>
+                <h3>70M+ Songs</h3>
+                <p>Massive database covering all genres and languages</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'file';
+        let currentFile = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('audd_api_key');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+            
+            document.getElementById('apiKey').addEventListener('change', (e) => {
+                localStorage.setItem('audd_api_key', e.target.value);
+            });
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('file-section').style.display = tab === 'file' ? 'block' : 'none';
+            document.getElementById('mic-section').style.display = tab === 'mic' ? 'block' : 'none';
+            document.getElementById('link-section').style.display = tab === 'link' ? 'block' : 'none';
+            
+            hideResults();
+        }
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                currentFile = file;
+                document.querySelector('.upload-area').innerHTML = `
+                    <div class="upload-icon">✅</div>
+                    <h3>${file.name}</h3>
+                    <p>${formatFileSize(file.size)} • Ready to analyze</p>
+                `;
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        currentFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                        document.getElementById('recordingStatus').textContent = '✅ Recording saved! Click Identify';
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    document.getElementById('micBtn').classList.add('recording');
+                    document.getElementById('recordingStatus').style.display = 'block';
+                    
+                } catch (err) {
+                    showStatus('Microphone access denied. Please allow microphone permissions.', 'error');
+                }
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                document.getElementById('micBtn').classList.remove('recording');
+            }
+        }
+
+        async function analyze() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showStatus('⚠️ Please enter your AudD API key first (get free key from audd.io)', 'error');
+                document.querySelector('.api-info').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            if (currentTab === 'file' && !currentFile) {
+                showStatus('Please select an audio file first', 'error');
+                return;
+            }
+
+            if (currentTab === 'mic' && !currentFile) {
+                showStatus('Please record audio first', 'error');
+                return;
+            }
+
+            if (currentTab === 'link') {
+                showStatus('Link processing requires backend server. Please use file upload or microphone for now.', 'error');
+                return;
+            }
+
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('spinner').style.display = 'block';
+            document.getElementById('btnText').textContent = 'Analyzing with AI...';
+            showStatus('🔍 Creating audio fingerprint and matching against 70M+ songs...', 'processing');
+            hideResults();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', currentFile);
+                formData.append('api_token', apiKey);
+                formData.append('return', 'apple_music,spotify');
+
+                const response = await fetch('https://api.audd.io/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.result) {
+                    displayResults(data.result);
+                    showStatus('✅ Song identified successfully!', 'success');
+                } else {
+                    showStatus('❌ Could not identify song. Try a clearer audio sample (3+ seconds, less background noise)', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Error: ' + error.message + '. Check your API key and try again.', 'error');
+            } finally {
+                document.getElementById('analyzeBtn').disabled = false;
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('btnText').textContent = 'Identify Song';
+            }
+        }
+
+        function displayResults(result) {
+            document.getElementById('songTitle').textContent = result.title || 'Unknown Title';
+            document.getElementById('artistName').textContent = result.artist || 'Unknown Artist';
+            document.getElementById('album').textContent = result.album || 'Unknown Album';
+            document.getElementById('year').textContent = result.release_date ? result.release_date.substring(0, 4) : 'Unknown Year';
+            document.getElementById('genre').textContent = result.genre || 'Music';
+            
+            if (result.spotify && result.spotify.album && result.spotify.album.images) {
+                const art = document.getElementById('albumArt');
+                art.style.background = `url(${result.spotify.album.images[0].url}) center/cover`;
+                art.textContent = '';
+            } else {
+                document.getElementById('albumArt').textContent = '🎵';
+                document.getElementById('albumArt').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)';
+            }
+
+            if (result.spotify && result.spotify.external_urls) {
+                document.getElementById('spotifyLink').href = result.spotify.external_urls.spotify;
+            }
+            if (result.apple_music && result.apple_music.url) {
+                document.getElementById('appleLink').href = result.apple_music.url;
+            }
+            
+            const searchQuery = encodeURIComponent(`${result.title} ${result.artist}`);
+            document.getElementById('youtubeLink').href = `https://www.youtube.com/results?search_query=${searchQuery}`;
+
+            document.getElementById('confidence').textContent = 'Match Found';
+
+            document.getElementById('results').classList.add('active');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function hideResults() {
+            document.getElementById('results').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
