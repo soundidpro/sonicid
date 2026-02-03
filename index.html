@@ -149,6 +149,11 @@
             animation: pulse 1.5s infinite;
         }
 
+        .mic-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         @keyframes pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 110, 0.4); }
             50% { box-shadow: 0 0 0 20px rgba(255, 0, 110, 0); }
@@ -395,7 +400,7 @@
             background: var(--primary-dark);
         }
 
-        /* Guide Section - The Design You Liked */
+        /* Guide Section */
         .guide-section {
             background: var(--bg-card);
             border-radius: 20px;
@@ -467,6 +472,54 @@
             font-size: 18px;
         }
 
+        /* Offline Warning */
+        .offline-banner {
+            background: var(--error);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: none;
+            font-weight: 600;
+        }
+
+        .offline-banner.show {
+            display: block;
+        }
+
+        /* Permission Error */
+        .permission-error {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid var(--error);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .permission-error.show {
+            display: block;
+        }
+
+        .permission-error h4 {
+            color: var(--error);
+            margin-bottom: 10px;
+        }
+
+        .permission-error button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -514,6 +567,11 @@
     </style>
 </head>
 <body>
+    <!-- Offline Warning Banner -->
+    <div class="offline-banner" id="offlineBanner">
+        📡 No Internet Connection. Please check your network and try again.
+    </div>
+
     <div class="container">
         <header>
             <div class="logo">🎵 SonicID Pro</div>
@@ -537,6 +595,16 @@
 
             <div id="mic-section" style="display: none; text-align: center;">
                 <p style="color: var(--text-secondary); margin-bottom: 20px;">Click the microphone and hum or play the song for 5-10 seconds</p>
+                
+                <!-- Permission Error Message -->
+                <div class="permission-error" id="permissionError">
+                    <h4>🎤 Microphone Access Required</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px;">
+                        This app needs microphone permission to record audio. Please allow access when prompted.
+                    </p>
+                    <button onclick="requestMicrophoneAccess()">Try Again</button>
+                </div>
+
                 <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
                 <p id="recordingStatus" style="color: var(--secondary); display: none;">🔴 Recording... Click to stop</p>
             </div>
@@ -586,7 +654,7 @@
             </p>
         </div>
 
-        <!-- Guide Section - Step by Step -->
+        <!-- Guide Section -->
         <div class="guide-section">
             <div class="guide-header">
                 <span>📋</span>
@@ -644,8 +712,26 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
+        let microphonePermission = false;
 
+        // Check online/offline status
+        function updateOnlineStatus() {
+            const banner = document.getElementById('offlineBanner');
+            if (!navigator.onLine) {
+                banner.classList.add('show');
+                document.getElementById('analyzeBtn').disabled = true;
+            } else {
+                banner.classList.remove('show');
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Initial check
         document.addEventListener('DOMContentLoaded', () => {
+            updateOnlineStatus();
             const savedKey = localStorage.getItem('audd_api_key');
             if (savedKey) {
                 document.getElementById('apiKey').value = savedKey;
@@ -653,6 +739,10 @@
         });
 
         function saveApiKey() {
+            if (!navigator.onLine) {
+                showStatus('❌ No internet connection. Please connect and try again.', 'error');
+                return;
+            }
             const key = document.getElementById('apiKey').value.trim();
             if (key) {
                 localStorage.setItem('audd_api_key', key);
@@ -674,6 +764,10 @@
         }
 
         function handleFile(e) {
+            if (!navigator.onLine) {
+                showStatus('❌ No internet connection.', 'error');
+                return;
+            }
             const file = e.target.files[0];
             if (file) {
                 currentFile = file;
@@ -693,10 +787,22 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
+        async function requestMicrophoneAccess() {
+            document.getElementById('permissionError').classList.remove('show');
+            document.getElementById('micBtn').disabled = false;
+            await toggleRecording();
+        }
+
         async function toggleRecording() {
+            if (!navigator.onLine) {
+                showStatus('❌ No internet connection.', 'error');
+                return;
+            }
+
             if (!isRecording) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    microphonePermission = true;
                     mediaRecorder = new MediaRecorder(stream);
                     audioChunks = [];
                     
@@ -714,9 +820,14 @@
                     isRecording = true;
                     document.getElementById('micBtn').classList.add('recording');
                     document.getElementById('recordingStatus').style.display = 'block';
+                    document.getElementById('recordingStatus').textContent = '🔴 Recording... Click to stop';
                     
                 } catch (err) {
-                    showStatus('Microphone access denied. Please allow microphone permissions.', 'error');
+                    console.error('Microphone error:', err);
+                    microphonePermission = false;
+                    document.getElementById('permissionError').classList.add('show');
+                    document.getElementById('micBtn').disabled = true;
+                    showStatus('Microphone access denied. Please allow permissions.', 'error');
                 }
             } else {
                 mediaRecorder.stop();
@@ -727,6 +838,11 @@
         }
 
         async function analyze() {
+            if (!navigator.onLine) {
+                showStatus('❌ No internet connection. Please check your network.', 'error');
+                return;
+            }
+
             const apiKey = document.getElementById('apiKey').value.trim();
             
             if (!apiKey) {
