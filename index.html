@@ -158,22 +158,6 @@
             display: none;
         }
 
-        .link-input {
-            width: 100%;
-            padding: 18px 20px;
-            background: var(--bg-dark);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            color: var(--text-primary);
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-
-        .link-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
         .analyze-btn {
             width: 100%;
             padding: 18px;
@@ -361,37 +345,126 @@
             opacity: 0.9;
         }
 
-        .api-info {
-            background: rgba(255, 183, 3, 0.1);
-            border: 1px solid var(--warning);
-            border-radius: 12px;
-            padding: 20px;
+        /* API Key Input Section */
+        .api-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
             margin-top: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .api-info h4 {
+        .api-section h3 {
             color: var(--warning);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .api-info p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
+            gap: 10px;
+            font-size: 18px;
         }
 
         .api-key-input {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             background: var(--bg-dark);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: var(--text-primary);
-            margin-top: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
             font-family: monospace;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .save-key-btn {
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-key-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Guide Section - The Design You Liked */
+        .guide-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .guide-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .guide-step {
+            background: var(--bg-dark);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .guide-step:hover {
+            background: var(--bg-hover);
+            transform: translateX(5px);
+        }
+
+        .guide-step h4 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .guide-step p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .guide-step a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .guide-step a:hover {
+            text-decoration: underline;
+        }
+
+        .guide-tip {
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .guide-tip-icon {
+            color: var(--warning);
+            font-size: 18px;
         }
 
         .features {
@@ -451,7 +524,6 @@
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('file')">📁 Upload File</button>
                 <button class="tab" onclick="switchTab('mic')">🎤 Record Audio</button>
-                <button class="tab" onclick="switchTab('link')">🔗 Paste Link</button>
             </div>
 
             <div id="file-section">
@@ -467,13 +539,6 @@
                 <p style="color: var(--text-secondary); margin-bottom: 20px;">Click the microphone and hum or play the song for 5-10 seconds</p>
                 <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
                 <p id="recordingStatus" style="color: var(--secondary); display: none;">🔴 Recording... Click to stop</p>
-            </div>
-
-            <div id="link-section" style="display: none;">
-                <input type="text" class="link-input" id="linkInput" placeholder="Paste YouTube, TikTok, Instagram, Twitter link here...">
-                <p style="color: var(--text-secondary); font-size: 13px; margin-top: -10px; margin-bottom: 15px;">
-                    ⚠️ Note: Link processing requires backend server (not available in this demo)
-                </p>
             </div>
 
             <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
@@ -508,20 +573,50 @@
             </div>
         </div>
 
-        <div class="api-info">
-            <h4>⚠️ Important: API Key Required for Real Recognition</h4>
-            <p>
-                This app uses the <strong>AudD Music Recognition API</strong> (the same technology powering many Shazam alternatives).
-                To get real results:
+        <!-- API Key Input Section -->
+        <div class="api-section">
+            <h3>⚠️ API Key Required</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+                This app uses the <strong>AudD Music Recognition API</strong>. Enter your API key below:
             </p>
-            <ol style="color: var(--text-secondary); font-size: 14px; margin: 10px 0; padding-left: 20px;">
-                <li>Get a free API key from <a href="https://audd.io" target="_blank" style="color: var(--primary);">audd.io</a> (100 free requests/month)</li>
-                <li>Enter your key below:</li>
-            </ol>
             <input type="text" class="api-key-input" id="apiKey" placeholder="Enter your AudD API key here...">
+            <button class="save-key-btn" onclick="saveApiKey()">Save API Key</button>
             <p style="font-size: 12px; margin-top: 10px; color: var(--text-secondary);">
                 🔒 Your API key is stored locally in your browser only
             </p>
+        </div>
+
+        <!-- Guide Section - Step by Step -->
+        <div class="guide-section">
+            <div class="guide-header">
+                <span>📋</span>
+                <span>How to Get Your Free API Key</span>
+            </div>
+
+            <div class="guide-step">
+                <h4>Step 1: Visit AudD Website</h4>
+                <p>Go to <a href="https://audd.io" target="_blank">audd.io</a> and click on "Get API Token" or "Sign Up"</p>
+            </div>
+
+            <div class="guide-step">
+                <h4>Step 2: Create Free Account</h4>
+                <p>Sign up with your email. It's completely free and you get 100 requests per month.</p>
+            </div>
+
+            <div class="guide-step">
+                <h4>Step 3: Copy Your API Key</h4>
+                <p>After signing up, go to your dashboard and copy the API token (a long string of letters and numbers).</p>
+            </div>
+
+            <div class="guide-step">
+                <h4>Step 4: Paste in SonicID</h4>
+                <p>Come back to this app, paste your API key in the box above, and click "Save API Key". You're ready to identify songs!</p>
+            </div>
+
+            <div class="guide-tip">
+                <span class="guide-tip-icon">💡</span>
+                <span>Tip: Your API key is stored locally on your device and never shared with anyone.</span>
+            </div>
         </div>
 
         <div class="features">
@@ -555,11 +650,17 @@
             if (savedKey) {
                 document.getElementById('apiKey').value = savedKey;
             }
-            
-            document.getElementById('apiKey').addEventListener('change', (e) => {
-                localStorage.setItem('audd_api_key', e.target.value);
-            });
         });
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKey').value.trim();
+            if (key) {
+                localStorage.setItem('audd_api_key', key);
+                showStatus('✅ API Key saved successfully!', 'success');
+            } else {
+                showStatus('⚠️ Please enter an API key first', 'error');
+            }
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -568,7 +669,6 @@
             
             document.getElementById('file-section').style.display = tab === 'file' ? 'block' : 'none';
             document.getElementById('mic-section').style.display = tab === 'mic' ? 'block' : 'none';
-            document.getElementById('link-section').style.display = tab === 'link' ? 'block' : 'none';
             
             hideResults();
         }
@@ -630,8 +730,8 @@
             const apiKey = document.getElementById('apiKey').value.trim();
             
             if (!apiKey) {
-                showStatus('⚠️ Please enter your AudD API key first (get free key from audd.io)', 'error');
-                document.querySelector('.api-info').scrollIntoView({ behavior: 'smooth' });
+                showStatus('⚠️ Please enter your AudD API key first', 'error');
+                document.querySelector('.api-section').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
 
@@ -642,11 +742,6 @@
 
             if (currentTab === 'mic' && !currentFile) {
                 showStatus('Please record audio first', 'error');
-                return;
-            }
-
-            if (currentTab === 'link') {
-                showStatus('Link processing requires backend server. Please use file upload or microphone for now.', 'error');
                 return;
             }
 
